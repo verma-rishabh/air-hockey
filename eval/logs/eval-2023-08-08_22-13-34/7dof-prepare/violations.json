@@ -1,0 +1,29 @@
+{
+    "Episode 0": [
+        "joint_vel_constr violated",
+        "ee_constr violated",
+        "max computation_time > 0.2s"
+    ],
+    "Episode 1": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 2": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 3": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 4": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "violation summary": {
+        "joint_vel_constr": 5,
+        "ee_constr": 5,
+        "Computation Time": 1,
+        "Total": 11
+    }
+}

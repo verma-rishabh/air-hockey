@@ -1,0 +1,19 @@
+env: 7dof-hit
+agent:
+    policy: tqc-hit-mushroomrl               
+    seed: 0              
+    start_timesteps: 0
+    eval_freq: 3e3
+    max_timesteps: 5e7     
+    batch_size: 1024
+    discount: 0.99             
+    tau: 0.005
+    top_quantiles_to_drop_per_net: 2
+    n_quantiles: 25
+    n_nets: 5       
+    max_episode_steps: 200
+    save_model: True     
+    load_model: ""                             
+    # dump_dir : /run/media/luke/Data/uni/SS2023/DL Lab/Project/qualifying/V3/tqc/hit
+    dump_dir : ./hit/v1
+    file_name : ${agent.policy}_${env}_${agent.seed}
