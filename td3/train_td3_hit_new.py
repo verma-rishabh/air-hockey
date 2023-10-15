@@ -18,6 +18,7 @@ import scipy.linalg
 from scipy import sparse
 from casadi import SX, sin, Function, inf,vertcat,nlpsol,qpsol,sumsqr
 
+
 class train(AirHockeyChallengeWrapper):
     def __init__(self, env=None, custom_reward_function=HitReward(), interpolation_order=1, **kwargs):
         # Load config file
@@ -31,13 +32,13 @@ class train(AirHockeyChallengeWrapper):
         np.random.seed(self.conf.agent.seed)
         # env variables
        
-        self.action_shape = 2
+        self.action_shape = 3
         self.observation_shape = self.env_info["rl_info"].observation_space.shape[0]
         # policy
         self.policy = build_agent(self.env_info)
 
-        self.min_action = np.array([0.65,-0.40])
-        self.max_action = np.array([1.32,0.40])
+        self.min_action = np.array([0.65,-0.40,0])
+        self.max_action = np.array([1.32,0.40,1.5])
         # make dirs 
         self.make_dir()
         self.tensorboard = SummaryWriter(self.conf.agent.dump_dir + "/tensorboard/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
@@ -48,7 +49,7 @@ class train(AirHockeyChallengeWrapper):
             self.policy.load(self.conf.agent.dump_dir + f"/models/{policy_file}")
         
         self.replay_buffer = ReplayBuffer(self.observation_shape, self.action_shape)
-    
+
     def integrate_RK4(self,s_expr, a_expr, sdot_expr, dt, N_steps=1):
         '''RK4 integrator.
 
@@ -94,7 +95,7 @@ class train(AirHockeyChallengeWrapper):
         s_dot = vertcat(jac @ omega)
         # Define number of steps in the control horizon and discretization step
         # print(s_dot)
-        N = 5
+        N = 10
         delta_t = 1/50
         # Define RK4 integrator function and initial state x0_bar
         F_rk4 = Function("F_rk4", [s, omega], [self.integrate_RK4(s, omega, s_dot, delta_t)])
@@ -140,8 +141,8 @@ class train(AirHockeyChallengeWrapper):
             # New NLP variable for state at end of interval
             Xk = SX.sym(f'X_{k+1}', 3)
             w += [Xk]
-            lbw += [.5,-.5,0.1645]
-            ubw += [1.5,.5,0.1655]
+            lbw += [.5,-.5,0.165]
+            ubw += [1.5,.5,0.170]
             w0 += [0, 0,0]
 
             # Add equality constraint to "close the gap" for multiple shooting
@@ -167,23 +168,20 @@ class train(AirHockeyChallengeWrapper):
     def _step(self,state,action):
         action = self.policy.action_scaleup(action)
         # print(action)
-        q_0 = state[6:13]
-        # cur_pos = forward_kinematics(self.policy.robot_model, self.policy.robot_data, q_0)[0][:3]
         des_pos = np.array([action[0],action[1],0.1645])                                #'ee_desired_height': 0.1645
-        # des_pos[2] = 0.1645
+
         # x_ = [action[0],action[1]] 
         # y = self.policy.get_ee_pose(state)[0][:2]
         # des_v = action[2]*(x_-y)/(np.linalg.norm(x_-y)+1e-8)
         # des_v = np.concatenate((des_v,[0])) 
-        
+        q_0 = state[6:13]
         jac = jacobian(self.policy.robot_model, self.policy.robot_data,q_0)[:3, :7]
         x0 = list(forward_kinematics(self.policy.robot_model, self.policy.robot_data, q_0)[0])
         q,_ = self.solve_casadi(x0,des_pos,jac)
         if(not _):
-            reward = -10
+            reward = -1
             done = True
             return state, reward, done, {}
-
     # print(q)
         next_q = q_0 + q*0.02
         # # _,x = inverse_kinematics(self.policy.robot_model, self.policy.robot_data,des_pos)

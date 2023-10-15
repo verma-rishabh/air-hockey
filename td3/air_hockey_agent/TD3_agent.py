@@ -83,10 +83,10 @@ class TD3_agent(AgentBase):
 
         state_dim = env_info["rl_info"].observation_space.shape[0]
  
-        action_dim = 3
+        action_dim = 2
 
-        self.min_action = torch.from_numpy(np.array([0.65,-0.40,0],dtype=np.float32)).to(device)
-        self.max_action = torch.from_numpy(np.array([1.32,0.40,1.5],dtype=np.float32)).to(device)
+        self.min_action = torch.from_numpy(np.array([0.65,-0.40],dtype=np.float32)).to(device)
+        self.max_action = torch.from_numpy(np.array([1.32,0.40],dtype=np.float32)).to(device)
         state_max = np.array(env_info['rl_info'].observation_space.high,dtype=np.float32)
         self.state_max = torch.from_numpy(state_max).to(device)
 
@@ -127,17 +127,17 @@ class TD3_agent(AgentBase):
         action = np.clip(action, low, high)
         return action
 
-    def draw_action(self, state):
-        norm_state = torch.FloatTensor(state.reshape(1, -1)).to(device)
-        action = self.action_scaleup(self.actor(norm_state)[0].detach().cpu().numpy())
-        des_pos = np.array([action[0],action[1],0.1645])                                #'ee_desired_height': 0.1645
-        x_ = [action[0],action[1]] 
-        y = self.get_ee_pose(state)[0][:2]
-        des_v = action[2]*(x_-y)/(np.linalg.norm(x_-y)+1e-8)
-        des_v = np.concatenate((des_v,[0])) 
-        # _,x = inverse_kinematics(self.policy.robot_model, self.policy.robot_data,des_pos)
-        _,x = solve_hit_config_ik_null(self.robot_model,self.robot_data, des_pos, des_v, self.get_joint_pos(state))
-        return x
+    # def draw_action(self, state):
+    #     norm_state = torch.FloatTensor(state.reshape(1, -1)).to(device)
+    #     action = self.action_scaleup(self.actor(norm_state)[0].detach().cpu().numpy())
+    #     des_pos = np.array([action[0],action[1],0.1645])                                #'ee_desired_height': 0.1645
+    #     x_ = [action[0],action[1]] 
+    #     y = self.get_ee_pose(state)[0][:2]
+    #     des_v = action[2]*(x_-y)/(np.linalg.norm(x_-y)+1e-8)
+    #     des_v = np.concatenate((des_v,[0])) 
+    #     # _,x = inverse_kinematics(self.policy.robot_model, self.policy.robot_data,des_pos)
+    #     _,x = solve_hit_config_ik_null(self.robot_model,self.robot_data, des_pos, des_v, self.get_joint_pos(state))
+    #     return x
 
 
     def train(self, replay_buffer, batch_size=1024):

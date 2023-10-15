@@ -9,10 +9,11 @@ from air_hockey_agent.agent_builder_sac import build_agent
 from utils import ReplayBuffer, solve_hit_config_ik_null
 from torch.utils.tensorboard.writer import SummaryWriter
 from omegaconf import OmegaConf
-from air_hockey_challenge.utils.kinematics import inverse_kinematics, jacobian
+from air_hockey_challenge.utils.kinematics import inverse_kinematics, jacobian, forward_kinematics
 from datetime import datetime
 import copy
 from reward import HitReward, DefendReward, PrepareReward
+from casadi import SX, sin, Function, inf,vertcat,nlpsol,qpsol,sumsqr
 
 class train(AirHockeyChallengeWrapper):
     def __init__(self, env=None, custom_reward_function=HitReward(), interpolation_order=1, **kwargs):
@@ -46,22 +47,166 @@ class train(AirHockeyChallengeWrapper):
         
         self.replay_buffer = ReplayBuffer(self.observation_shape, self.action_shape)
     
-    def _step(self,state,action):
+    def integrate_RK4(self,s_expr, a_expr, sdot_expr, dt, N_steps=1):
+        '''RK4 integrator.
+
+        s_expr, a_expr: casadi expression that have been used to define the dynamics sdot_expr
+        sdot_expr:      casadi expr defining the rhs of the ode
+        dt:             integration interval
+        N_steps:        number of integration steps per integration interval, default:1
+        '''
+        dt = self.env_info['dt']
+        h = dt/N_steps
+
+        s_end = s_expr
+
+        sdot_fun = Function('xdot', [s_expr, a_expr], [sdot_expr])
+
+        for _ in range(N_steps):
+
+        # FILL IN YOUR CODE HERE
+            v_1 = sdot_fun(s_end, a_expr)
+            v_2 = sdot_fun(s_end + 0.5 * h * v_1, a_expr)
+            v_3 = sdot_fun(s_end + 0.5 * h * v_2, a_expr)
+            v_4 = sdot_fun(s_end + v_3 * h, a_expr)
+            s_end += (1/6) * (v_1 + 2 * v_2 + 2 * v_3 + v_4) * h
+
+        F_expr = s_end
+
+        return F_expr
+    
+    def solve_casadi(self,x0_bar,x_des,jac):
+        # continuous model dynamics
+        n_s = 3  # number of states
+        n_a = 7  # number of actions
+
+        x = SX.sym('x')
+        y = SX.sym('y')
+        z = SX.sym('z')
+
+        omega = SX.sym('omega',7)
+
+        s = vertcat(x,y,z)
+        # q_0 = policy.robot_data.qpos.copy()
+        # jac = jacobian(policy.robot_model, policy.robot_data,q_0)[:3, :7]
+        s_dot = vertcat(jac @ omega)
+        # Define number of steps in the control horizon and discretization step
+        # print(s_dot)
+        N = 10
+        delta_t = 1/50
+        # Define RK4 integrator function and initial state x0_bar
+        F_rk4 = Function("F_rk4", [s, omega], [self.integrate_RK4(s, omega, s_dot, delta_t)])
+        # x0_bar = [-.5, .5,.165]
+
+        # Define the weighting matrix for the cost function
+        Q = np.eye(n_s)
+        R = np.eye(n_a)
+
+            # Start with an empty NLP
+        w = []
+        w0 = []
+        lbw = []
+        ubw = []
+        J = 0
+        g = []
+        lbg = []
+        ubg = []
+
+        # "Lift" initial conditions
+        Xk = SX.sym('X0', 3)
+        w += [Xk]
+        lbw += x0_bar    # set initial state
+        ubw += x0_bar    # set initial state
+        w0 += x0_bar     # set initial state
+
+        # Formulate the NLP
+        for k in range(N):
+            # New NLP variable for the control
+            Uk = SX.sym('U_' + str(k),7)
+            w   += [Uk]
+            lbw += [-1.48352986, -1.48352986, -1.74532925, -1.30899694, -2.26892803,
+            -2.35619449, -2.35619449]
+            ubw += [1.48352986, 1.48352986, 1.74532925, 1.30899694, 2.26892803,
+            2.35619449, 2.35619449]
+            w0  += [0,0,0,0,0,0,0]
+
+            # Integrate till the end of the interval
+            Xk_end = F_rk4(Xk, Uk)
+            # J = J + delta_t *(sumsqr((Xk-x_des).T @ Q )+ sumsqr(R@Uk)) # Complete with the stage cost
+            J = J + (sumsqr((Xk-x_des))) # Complete with the stage cost
+
+            # New NLP variable for state at end of interval
+            Xk = SX.sym(f'X_{k+1}', 3)
+            w += [Xk]
+            lbw += [.5,-.5,0.165]
+            ubw += [1.5,.5,0.170]
+            w0 += [0, 0,0]
+
+            # Add equality constraint to "close the gap" for multiple shooting
+            g   += [Xk_end-Xk]
+            lbg += [0, 0,0]
+            ubg += [0, 0,0]
+        J = J + sumsqr((Xk-x_des)) # Complete with the terminal cost (NOTE it should be weighted by delta_t)
+
+        # Create an NLP solver
+        prob = {'f': J, 'x': vertcat(*w), 'g': vertcat(*g)}
+        solver = nlpsol('solver', 'ipopt', prob,{'ipopt':{'print_level':0}, 'print_time': False})
+
+        # Solve the NLP
+        sol = solver(x0=w0, lbx=lbw, ubx=ubw, lbg=lbg, ubg=ubg)
+        w_opt = sol['x'].full().flatten()
+        # return np.array([w_opt[3::10],w_opt[4::10],w_opt[5::10],w_opt[6::10],w_opt[7::10],w_opt[8::10],w_opt[9::10]])
         
+        return np.array(w_opt[3:10]),solver.stats()['success']
+        # return solver
+    
+
+    
+    def _step(self,state,action):
+        # action = self.policy.action_scaleup(action)
         # print(action)
         des_pos = np.array([action[0],action[1],0.1645])                                #'ee_desired_height': 0.1645
 
-        x_ = [action[0],action[1]] 
-        y = self.policy.get_ee_pose(state)[0][:2]
-        des_v = action[2]*(x_-y)/(np.linalg.norm(x_-y)+1e-8)
-        des_v = np.concatenate((des_v,[0])) 
-        _,x = inverse_kinematics(self.policy.robot_model, self.policy.robot_data,des_pos)
-        # _,x = solve_hit_config_ik_null(self.policy.robot_model,self.policy.robot_data, des_pos, des_v, self.policy.get_joint_pos(state))
-        action = copy.deepcopy(x)
-        next_state, reward, done, info = self.step(x)
-        
+        # x_ = [action[0],action[1]] 
+        # y = self.policy.get_ee_pose(state)[0][:2]
+        # des_v = action[2]*(x_-y)/(np.linalg.norm(x_-y)+1e-8)
+        # des_v = np.concatenate((des_v,[0])) 
+        q_0 = state[6:13]
+        jac = jacobian(self.policy.robot_model, self.policy.robot_data,q_0)[:3, :7]
+        x0 = list(forward_kinematics(self.policy.robot_model, self.policy.robot_data, q_0)[0])
+        q,_ = self.solve_casadi(x0,des_pos,jac)
+        if(not _):
+            reward = -1
+            done = True
+            return state, reward, done, {}
+    # print(q)
+        next_q = q_0 + q*0.02
+        # # _,x = inverse_kinematics(self.policy.robot_model, self.policy.robot_data,des_pos)
+        # _,x = self._solve_aqp(des_pos,self.policy.robot_data,self.policy.joint_anchor_pos)
+        # # _,x = solve_hit_config_ik_null(self.policy.robot_model,self.policy.robot_data, des_pos, des_v, self.policy.get_joint_pos(state))
+        # q_cur = x * self.env_info['dt']
+        action = copy.deepcopy(q)
+        next_state, reward, done, info = self.step(action)
+
 
         return next_state, reward, done, info
+
+    # def _step(self,state,action):
+        
+    #     # print(action)
+    #     des_pos = np.array([action[0],action[1],0.1645])                                #'ee_desired_height': 0.1645
+
+    #     x_ = [action[0],action[1]] 
+    #     y = self.policy.get_ee_pose(state)[0][:2]
+    #     des_v = action[2]*(x_-y)/(np.linalg.norm(x_-y)+1e-8)
+    #     des_v = np.concatenate((des_v,[0])) 
+    #     _,x = inverse_kinematics(self.policy.robot_model, self.policy.robot_data,des_pos)
+    #     # _,x = solve_hit_config_ik_null(self.policy.robot_model,self.policy.robot_data, des_pos, des_v, self.policy.get_joint_pos(state))
+    #     action = copy.deepcopy(x)
+    #     next_state, reward, done, info = self.step(x)
+        
+
+    #     return next_state, reward, done, info
 
     
     def make_dir(self):
@@ -89,7 +234,7 @@ class train(AirHockeyChallengeWrapper):
 
                 action = self.policy.select_action(state)
                 next_state, reward, done, info = self._step(state,action)
-                # self.render()
+                self.render()
                 avg_reward += reward
                 episode_timesteps+=1
                 state = next_state
