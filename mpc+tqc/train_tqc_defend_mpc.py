@@ -157,7 +157,7 @@ class train(AirHockeyChallengeWrapper):
         print(sol['x'].shape)
         # return np.array([w_opt[3::10],w_opt[4::10],w_opt[5::10],w_opt[6::10],w_opt[7::10],w_opt[8::10],w_opt[9::10]])
 
-        return np.array(w_opt[43:50]), solver.stats()['success']
+        return np.array(w_opt[3:10]), solver.stats()['success']
 
     def _step(self, state, action):
         action = self.policy.action_scaleup(action)
