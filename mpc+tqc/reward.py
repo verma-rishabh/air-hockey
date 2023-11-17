@@ -66,16 +66,16 @@ class HitReward:
                 q = mdp.get_joints(next_state, 1)[0]
                 r -= 0.01 * np.linalg.norm(q - mdp.init_state)
         # print(r)
-        # q = next_state[mdp.env_info['joint_pos_ids']]
-        # dq = next_state[mdp.env_info['joint_vel_ids']]
-        # constraints = mdp.env_info['constraints'].keys()
+        q = next_state[mdp.env_info['joint_pos_ids']]
+        dq = next_state[mdp.env_info['joint_vel_ids']]
+        constraints = mdp.env_info['constraints'].keys()
 
-        # constraint_reward = 0
-        # for constr in constraints:
-        #     error = mdp.env_info['constraints'].get(constr).fun(q, dq)
-        #     constr_error = np.sum(error[error > 0]) if np.any(error > 0) else 0
-        #     constraint_reward -= constr_error
-        # r += constraint_reward/10
+        constraint_reward = 0
+        for constr in constraints:
+            error = mdp.env_info['constraints'].get(constr).fun(q, dq)
+            constr_error = np.sum(error[error > 0]) if np.any(error > 0) else 0
+            constraint_reward -= constr_error
+        r += constraint_reward/10
         return r
 
 

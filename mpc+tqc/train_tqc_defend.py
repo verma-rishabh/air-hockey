@@ -8,14 +8,16 @@ from air_hockey_agent.agent_builder_tqc import build_agent
 from utils import ReplayBuffer, solve_hit_config_ik_null
 from torch.utils.tensorboard.writer import SummaryWriter
 from omegaconf import OmegaConf
-from air_hockey_challenge.utils.kinematics import inverse_kinematics, jacobian
+from air_hockey_challenge.utils.kinematics import inverse_kinematics, jacobian ,forward_kinematics
 from datetime import datetime
 import copy
 from reward import HitReward, DefendReward, PrepareReward
 
+
 class train(AirHockeyChallengeWrapper):
     def __init__(self, env=None, custom_reward_function=DefendReward(), interpolation_order=1, **kwargs):
         # Load config file
+        self.episode_timesteps = 0
         self.conf = OmegaConf.load('train_tqc_defend.yaml')
         env = self.conf.env
         # base env
@@ -54,11 +56,13 @@ class train(AirHockeyChallengeWrapper):
         des_v = action[2]*(x_-y)/(np.linalg.norm(x_-y)+1e-8)
         des_v = np.concatenate((des_v,[0])) 
         _,x = inverse_kinematics(self.policy.robot_model, self.policy.robot_data,des_pos)
+        #action_,_ = forward_kinematics(self.policy.robot_model, self.policy.robot_data, x)
+
         # _,x = solve_hit_config_ik_null(self.policy.robot_model,self.policy.robot_data, des_pos, des_v, self.policy.get_joint_pos(state))
         action = copy.deepcopy(x)
         next_state, reward, done, info = self.step(x)
-
-
+        action_, _ = forward_kinematics(self.policy.robot_model, self.policy.robot_data, next_state[self.env_info['joint_pos_ids']])
+        self.tensorboard.add_scalars("action", {"action_step": action_[2]}, self.episode_timesteps)
         return next_state, reward, done, info
 
     
@@ -80,19 +84,51 @@ class train(AirHockeyChallengeWrapper):
             avg_reward = 0.
             # print(_)
             state, done = self.reset(), False
-            episode_timesteps=0
-            while not done and episode_timesteps<100:
+            self.episode_timesteps=0
+            while not done and self.episode_timesteps<100:
                 # print("ep",episode_timesteps)
 
                 action = self.policy.select_action(state)
                 next_state, reward, done, info = self._step(state,action)
                 # self.render()
                 avg_reward += reward
-                episode_timesteps+=1
+                self.episode_timesteps+=1
                 state = next_state
             self.tensorboard.add_scalar("eval_reward", avg_reward,t+_)
         self.policy.actor.train()
 
+    def eval_plot_states(self,eval_episodes=10, episode_num=0):
+        self.policy.actor.eval()
+        t = int(self.conf.agent.max_timesteps)
+
+        for _ in range(eval_episodes):
+            avg_reward = 0.
+            # print(_)
+            state, done = self.reset(), False
+            self.episode_timesteps=0
+            while not done and self.episode_timesteps<500:
+                # print("ep",episode_timesteps)
+
+                action = self.policy.select_action(state)
+                action_ = copy.deepcopy(action)
+                next_state, reward, done, info = self._step(state,action)
+                self.render()
+                print(self.episode_timesteps)
+                if _ == episode_num:
+                    q = next_state[self.env_info['joint_pos_ids']]
+                    dq = next_state[self.env_info['joint_vel_ids']]
+
+                    c_ee = self.env_info['constraints'].get('ee_constr').z_ub
+
+
+                    self.tensorboard.add_scalars("action", {"action_Z": self.policy.action_scaleup(action_)[2], "constraint_z" : c_ee,},
+                                                self.episode_timesteps)
+
+                avg_reward += reward
+                self.episode_timesteps+=1
+                state = next_state
+            self.tensorboard.add_scalar("eval_reward", avg_reward,t+_)
+        self.policy.actor.train()
 
     def train_model(self):
         state, done = self.reset(), False
@@ -115,7 +151,7 @@ class train(AirHockeyChallengeWrapper):
                 action = self.policy.select_action(state)
             # Perform action
             next_state, reward, done, _ = self._step(state,action) 
-            # self.render()
+            #self.render()
             done_bool = float(done) if episode_timesteps < self.conf.agent.max_episode_steps else 0   ###MAX EPISODE STEPS
             # Store data in replay buffer
             # print(action)
@@ -148,4 +184,4 @@ class train(AirHockeyChallengeWrapper):
                 self.policy.save(self.conf.agent.dump_dir + f"/models/{self.conf.agent.file_name}")
 
 x = train()
-x.train_model()
+x.eval_plot_states(episode_num=0,eval_episodes=1)

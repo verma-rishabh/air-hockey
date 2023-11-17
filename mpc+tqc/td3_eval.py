@@ -43,7 +43,8 @@ class train(AirHockeyChallengeWrapper):
             policy_file = self.conf.agent.file_name if self.conf.agent.load_model == "default" else self.conf.agent .load_model
             print("loading model from file: ", policy_file)
             self.policy.load(self.conf.agent.dump_dir + f"/models/{policy_file}")
-        self.policy.load(self.conf.agent.dump_dir + f"/models/"+"tqc-hit-mushroomrl_7dof-hit_0")
+        else:
+            self.policy.load(self.conf.agent.dump_dir + f"/models/"+"tqc-hit_7dof-hit_1")
         self.replay_buffer = ReplayBuffer(self.observation_shape, self.action_shape)
     
     def integrate_RK4(self,s_expr, a_expr, sdot_expr, dt, N_steps=1):
@@ -239,6 +240,28 @@ class train(AirHockeyChallengeWrapper):
             self.tensorboard.add_scalar("eval_reward", avg_reward,t+_)
         self.policy.actor.train()
 
+    def eval_plot_states(self,eval_episodes=10, episode_num=0):
+        self.policy.actor.eval()
+        for t in range(int(self.conf.agent.max_timesteps)):
+
+            for _ in range(eval_episodes):
+                avg_reward = 0.
+                # print(_)
+                state, done = self.reset(), False
+                episode_timesteps=0
+                while not done and episode_timesteps<100:
+                    # print("ep",episode_timesteps)
+
+                    action = self.policy.select_action(state)
+                    next_state, reward, done, info = self._step(state,action)
+                    #self.render()
+                    if _ == episode_num:
+                        self.tensorboard.add_scalar("action", action[2],episode_timesteps)
+                    avg_reward += reward
+                    episode_timesteps+=1
+                    state = next_state
+                self.tensorboard.add_scalar("eval_reward", avg_reward,t+_)
+        self.policy.actor.train()
 
     def train_model(self):
         state, done = self.reset(), False
@@ -296,4 +319,4 @@ class train(AirHockeyChallengeWrapper):
             #     self.policy.save(self.conf.agent.dump_dir + f"/models/{self.conf.agent.file_name}")
 
 x = train()
-x.train_model()
+x.eval_plot_states()

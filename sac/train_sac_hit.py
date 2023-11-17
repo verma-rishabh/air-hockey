@@ -74,8 +74,8 @@ class train(AirHockeyChallengeWrapper):
         F_expr = s_end
 
         return F_expr
-    
-    def solve_casadi(self,x0_bar,x_des,jac):
+
+    def solve_casadi(self, x0_bar, x_des, jac):
         # continuous model dynamics
         n_s = 3  # number of states
         n_a = 7  # number of actions
@@ -84,16 +84,16 @@ class train(AirHockeyChallengeWrapper):
         y = SX.sym('y')
         z = SX.sym('z')
 
-        omega = SX.sym('omega',7)
+        omega = SX.sym('omega', 7)
 
-        s = vertcat(x,y,z)
+        s = vertcat(x, y, z)
         # q_0 = policy.robot_data.qpos.copy()
         # jac = jacobian(policy.robot_model, policy.robot_data,q_0)[:3, :7]
         s_dot = vertcat(jac @ omega)
         # Define number of steps in the control horizon and discretization step
         # print(s_dot)
         N = 10
-        delta_t = 1/50
+        delta_t = 1 / 50
         # Define RK4 integrator function and initial state x0_bar
         F_rk4 = Function("F_rk4", [s, omega], [self.integrate_RK4(s, omega, s_dot, delta_t)])
         # x0_bar = [-.5, .5,.165]
@@ -102,7 +102,7 @@ class train(AirHockeyChallengeWrapper):
         Q = np.eye(n_s)
         R = np.eye(n_a)
 
-            # Start with an empty NLP
+        # Start with an empty NLP
         w = []
         w0 = []
         lbw = []
@@ -115,49 +115,48 @@ class train(AirHockeyChallengeWrapper):
         # "Lift" initial conditions
         Xk = SX.sym('X0', 3)
         w += [Xk]
-        lbw += x0_bar    # set initial state
-        ubw += x0_bar    # set initial state
-        w0 += x0_bar     # set initial state
+        lbw += x0_bar  # set initial state
+        ubw += x0_bar  # set initial state
+        w0 += x0_bar  # set initial state
 
         # Formulate the NLP
         for k in range(N):
             # New NLP variable for the control
-            Uk = SX.sym('U_' + str(k),7)
-            w   += [Uk]
+            Uk = SX.sym('U_' + str(k), 7)
+            w += [Uk]
             lbw += [-1.48352986, -1.48352986, -1.74532925, -1.30899694, -2.26892803,
-            -2.35619449, -2.35619449]
+                    -2.35619449, -2.35619449]
             ubw += [1.48352986, 1.48352986, 1.74532925, 1.30899694, 2.26892803,
-            2.35619449, 2.35619449]
-            w0  += [0,0,0,0,0,0,0]
+                    2.35619449, 2.35619449]
+            w0 += [0, 0, 0, 0, 0, 0, 0]
 
             # Integrate till the end of the interval
             Xk_end = F_rk4(Xk, Uk)
             # J = J + delta_t *(sumsqr((Xk-x_des).T @ Q )+ sumsqr(R@Uk)) # Complete with the stage cost
-            J = J + (sumsqr((Xk-x_des))) # Complete with the stage cost
+            J = J + (sumsqr((Xk - x_des)))  # Complete with the stage cost
 
             # New NLP variable for state at end of interval
-            Xk = SX.sym(f'X_{k+1}', 3)
+            Xk = SX.sym(f'X_{k + 1}', 3)
             w += [Xk]
-            lbw += [.5,-.5,0.165]
-            ubw += [1.5,.5,0.170]
-            w0 += [0, 0,0]
+            lbw += [.5, -.5, 0.165]
+            ubw += [1.5, .5, 0.165]
+            w0 += [0, 0, 0]
 
             # Add equality constraint to "close the gap" for multiple shooting
-            g   += [Xk_end-Xk]
-            lbg += [0, 0,0]
-            ubg += [0, 0,0]
-        J = J + sumsqr((Xk-x_des)) # Complete with the terminal cost (NOTE it should be weighted by delta_t)
+            g += [Xk_end - Xk]
+            lbg += [0, 0, 0]
+            ubg += [0, 0, 0]
+        J = J + sumsqr((Xk - x_des))  # Complete with the terminal cost (NOTE it should be weighted by delta_t)
 
         # Create an NLP solver
         prob = {'f': J, 'x': vertcat(*w), 'g': vertcat(*g)}
-        solver = nlpsol('solver', 'ipopt', prob,{'ipopt':{'print_level':0}, 'print_time': False})
+        solver = nlpsol('solver', 'ipopt', prob, {'ipopt': {'print_level': 0}, 'print_time': False})
 
         # Solve the NLP
         sol = solver(x0=w0, lbx=lbw, ubx=ubw, lbg=lbg, ubg=ubg)
         w_opt = sol['x'].full().flatten()
         # return np.array([w_opt[3::10],w_opt[4::10],w_opt[5::10],w_opt[6::10],w_opt[7::10],w_opt[8::10],w_opt[9::10]])
-        
-        return np.array(w_opt[3:10]),solver.stats()['success']
+        return np.array(w_opt[3:10]), solver.stats()['success']
         # return solver
     
 
@@ -165,7 +164,8 @@ class train(AirHockeyChallengeWrapper):
     def _step(self,state,action):
         # action = self.policy.action_scaleup(action)
         # print(action)
-        des_pos = np.array([action[0],action[1],0.1645])                                #'ee_desired_height': 0.1645
+        des_pos = np.array([action[0],action[1],0.1645])
+        #'ee_desired_height': 0.1645
 
         # x_ = [action[0],action[1]] 
         # y = self.policy.get_ee_pose(state)[0][:2]
@@ -174,18 +174,19 @@ class train(AirHockeyChallengeWrapper):
         q_0 = state[6:13]
         jac = jacobian(self.policy.robot_model, self.policy.robot_data,q_0)[:3, :7]
         x0 = list(forward_kinematics(self.policy.robot_model, self.policy.robot_data, q_0)[0])
-        q,_ = self.solve_casadi(x0,des_pos,jac)
-        if(not _):
-            reward = -1
-            done = True
+        q, _ = self.solve_casadi(x0,des_pos,jac)
+        if (not _):
+            reward = -10
+            done = 1
+            print("failed")
             return state, reward, done, {}
     # print(q)
-        next_q = q_0 + q*0.02
+        next_q = q_0 + q*self.env_info['dt']
         # # _,x = inverse_kinematics(self.policy.robot_model, self.policy.robot_data,des_pos)
         # _,x = self._solve_aqp(des_pos,self.policy.robot_data,self.policy.joint_anchor_pos)
         # # _,x = solve_hit_config_ik_null(self.policy.robot_model,self.policy.robot_data, des_pos, des_v, self.policy.get_joint_pos(state))
         # q_cur = x * self.env_info['dt']
-        action = copy.deepcopy(q)
+        action = copy.deepcopy(next_q)
         next_state, reward, done, info = self.step(action)
 
 
@@ -263,7 +264,7 @@ class train(AirHockeyChallengeWrapper):
                 action = self.policy.select_action(state)
             # Perform action
             next_state, reward, done, _ = self._step(state,action) 
-            # self.render()
+            self.render()
             done_bool = float(done) if episode_timesteps < self.conf.agent.max_episode_steps else 0   ###MAX EPISODE STEPS
             # Store data in replay buffer
             # print(action)
@@ -294,6 +295,7 @@ class train(AirHockeyChallengeWrapper):
                 self.eval_policy(t)
                 self.policy.save_checkpoint(self.conf.env,suffix=self.conf.agent.file_name,\
                      ckpt_path= self.conf.agent.dump_dir + f"/models/{self.conf.agent.file_name}")
+                print("checkpoint saved in" + self.conf.agent.dump_dir + f"/models/{self.conf.agent.file_name}")
 
 x = train()
 x.train_model()

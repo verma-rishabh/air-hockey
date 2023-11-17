@@ -296,6 +296,7 @@ class train(AirHockeyChallengeWrapper):
             if (t + 1) % self.conf.agent.eval_freq == 0:
                 self.eval_policy(t)
                 self.policy.save(self.conf.agent.dump_dir + f"/models/{self.conf.agent.file_name}")
+                print("saving file in " + self.conf.agent.dump_dir + f"/models/{self.conf.agent.file_name}")
 
 x = train()
 x.train_model()
