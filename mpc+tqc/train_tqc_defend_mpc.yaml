@@ -13,6 +13,6 @@ agent:
     n_nets: 5       
     max_episode_steps: 500
     save_model: True     
-    load_model: ""                             
+    load_model: "default"
     dump_dir : ./defend
     file_name : ${agent.policy}_${env}_${agent.seed}_mpc

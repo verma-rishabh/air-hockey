@@ -93,9 +93,9 @@ class TQC_agent(AgentBase):
 
         state_dim = env_info["rl_info"].observation_space.shape[0]
         #action_dim = env_info["rl_info"].action_space.shape[0]
-        action_dim = 3
-        self.min_action = np.array([0.65,-0.40,0])
-        self.max_action = np.array([1.32,0.40,1.5])
+        action_dim = 2
+        self.min_action = np.array([0.65,-0.40])
+        self.max_action = np.array([1.32,0.40])
         state_max = np.array(env_info['rl_info'].observation_space.high,dtype=np.float32)
         self.state_max = torch.from_numpy(state_max).to(device)
         # max_action = np.array([1.5,0.5,5],dtype=np.float32)

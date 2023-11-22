@@ -28,13 +28,13 @@ class train(AirHockeyChallengeWrapper):
         np.random.seed(self.conf.agent.seed)
         # env variables
  
-        self.action_shape = 3
+        self.action_shape = 2
         self.observation_shape = self.env_info["rl_info"].observation_space.shape[0]
         # policy
         self.policy = build_agent(self.env_info)
 
-        self.min_action = np.array([0.65,-0.40,0])
-        self.max_action = np.array([1.32,0.40,1.5])
+        self.min_action = np.array([0.65,-0.40])
+        self.max_action = np.array([1.32,0.40])
         # make dirs 
         self.make_dir()
         self.tensorboard = SummaryWriter(self.conf.agent.dump_dir + "/tensorboard/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
@@ -154,7 +154,7 @@ class train(AirHockeyChallengeWrapper):
         # Solve the NLP
         sol = solver(x0=w0, lbx=lbw, ubx=ubw, lbg=lbg, ubg=ubg)
         w_opt = sol['x'].full().flatten()
-        print(sol['x'].shape)
+
         # return np.array([w_opt[3::10],w_opt[4::10],w_opt[5::10],w_opt[6::10],w_opt[7::10],w_opt[8::10],w_opt[9::10]])
 
         return np.array(w_opt[3:10]), solver.stats()['success']
@@ -279,7 +279,7 @@ class train(AirHockeyChallengeWrapper):
 
             if done or episode_timesteps > self.conf.agent.max_episode_steps: 
                 # +1 to account for 0 indexing. +0 on ep_timesteps since it will increment +1 even if done=True
-                print(f"Total T: {t+1} Episode Num: {episode_num+1} Episode T: {episode_timesteps} Reward: {episode_reward.sum():.3f}")
+                print(f"Total T: {t+1} Episode Num: {episode_num+1} Episode T: {episode_timesteps} Reward: {np.sum(episode_reward):.3f}")
                 # Reset environment
                 if (actor_loss is not np.nan):
                     self.tensorboard.add_scalar("actor loss", actor_loss, t)
@@ -294,7 +294,7 @@ class train(AirHockeyChallengeWrapper):
                 episode_num += 1 
                 
             if (t + 1) % self.conf.agent.eval_freq == 0:
-                self.eval_policy(t)
+                #self.eval_policy(t)
                 self.policy.save(self.conf.agent.dump_dir + f"/models/{self.conf.agent.file_name}")
 
 x = train()

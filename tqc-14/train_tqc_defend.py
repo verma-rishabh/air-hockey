@@ -9,6 +9,7 @@ from air_hockey_agent.agent_builder_tqc import build_agent
 from utils import ReplayBuffer, solve_hit_config_ik_null
 from torch.utils.tensorboard.writer import SummaryWriter
 from omegaconf import OmegaConf
+from air_hockey_challenge.utils.kinematics import inverse_kinematics, jacobian ,forward_kinematics
 
 from datetime import datetime
 import copy
@@ -30,6 +31,7 @@ class train(AirHockeyChallengeWrapper):
         # self.action_shape = 3
         self.observation_shape = self.env_info["rl_info"].observation_space.shape[0]
         # policy
+        self.episode_timesteps = 0
         self.policy = build_agent(self.env_info)
         # action_space.high
         pos_max = self.env_info['robot']['joint_pos_limit'][1]
@@ -54,7 +56,42 @@ class train(AirHockeyChallengeWrapper):
 
         return next_state, reward, done, info
 
-    
+    def eval_plot_states(self,eval_episodes=10, episode_num=0):
+        self.policy.actor.eval()
+        t = int(self.conf.agent.max_timesteps)
+
+        for _ in range(eval_episodes):
+            avg_reward = 0.
+            # print(_)
+            state, done = self.reset(), False
+            self.episode_timesteps=0
+            while not done and self.episode_timesteps<500:
+                # print("ep",episode_timesteps)
+
+                action = self.policy.select_action(state)
+                action_ = copy.deepcopy(action)
+                #print(action)
+                next_state, reward, done, info = self._step(state,action)
+                action_ , __=forward_kinematics(self.policy.robot_model, self.policy.robot_data, next_state[self.env_info['joint_pos_ids']])
+
+                self.render()
+               # print(self.episode_timesteps)
+                if _ == episode_num:
+                    q = next_state[self.env_info['joint_pos_ids']]
+                    dq = next_state[self.env_info['joint_vel_ids']]
+
+                    c_ee_ub = self.env_info['constraints'].get('ee_constr').z_ub
+                    c_ee_lb = self.env_info['constraints'].get('ee_constr').z_lb
+
+                    self.tensorboard.add_scalars("action", {"action_Z": action_[2], "constraint_z_ub" : c_ee_ub,"constraint_z_ub" : c_ee_lb},
+                                                self.episode_timesteps)
+
+                avg_reward += reward
+                self.episode_timesteps+=1
+                state = next_state
+            self.tensorboard.add_scalar("eval_reward", avg_reward,t+_)
+        self.policy.actor.train()
+
     def make_dir(self):
         if not os.path.exists(self.conf.agent.dump_dir+"/results"):
             os.makedirs(self.conf.agent.dump_dir+"/results")
@@ -122,7 +159,7 @@ class train(AirHockeyChallengeWrapper):
 
             if done or episode_timesteps > self.conf.agent.max_episode_steps: 
                 # +1 to account for 0 indexing. +0 on ep_timesteps since it will increment +1 even if done=True
-                print(f"Total T: {t+1} Episode Num: {episode_num+1} Episode T: {episode_timesteps} Reward: {episode_reward.sum():.3f}")
+                print(f"Total T: {t+1} Episode Num: {episode_num+1} Episode T: {episode_timesteps} Reward: {np.sum(episode_reward):.3f}")
                 # Reset environment
                 if (actor_loss is not np.nan):
                     self.tensorboard.add_scalar("actor loss", actor_loss, t)
@@ -137,8 +174,8 @@ class train(AirHockeyChallengeWrapper):
                 episode_num += 1 
                 
             if (t + 1) % self.conf.agent.eval_freq == 0:
-                self.eval_policy(t)
+                #self.eval_policy(t)
                 self.policy.save(self.conf.agent.dump_dir + f"/models/{self.conf.agent.file_name}")
 
 x = train()
-x.train_model()
+x.eval_plot_states()

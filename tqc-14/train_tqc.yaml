@@ -13,7 +13,7 @@ agent:
     n_nets: 5       
     max_episode_steps: 200
     save_model: True     
-    load_model: ""                             
+    load_model: "default"
     # dump_dir : /run/media/luke/Data/uni/SS2023/DL Lab/Project/qualifying/V3/tqc/hit
     dump_dir : ./hit/v1
     file_name : ${agent.policy}_${env}_${agent.seed}
