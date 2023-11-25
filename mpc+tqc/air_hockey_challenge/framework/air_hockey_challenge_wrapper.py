@@ -95,9 +95,14 @@ class AirHockeyChallengeWrapper(Environment):
                     np.abs(puck_pos[1]) - self.base_env.env_info['table']['goal_width'] / 2 < 0:
                 success = 1
 
+        # elif "defend" in self.env_name:
+        #     if -0.8 < puck_pos[0] <= -0.2 and puck_vel[0] < 0.1:
+        #         success = 1
         elif "defend" in self.env_name:
-            if -0.8 < puck_pos[0] <= -0.2 and puck_vel[0] < 0.1:
-                success = 1
+            success = 1
+            if puck_pos[0] + self.base_env.env_info['table']['length'] / 2 < 0 and \
+                    np.abs(puck_pos[1]) - self.base_env.env_info['table']['goal_width'] / 2 < 0:
+                success = 0
 
         elif "prepare" in self.env_name:
             if -0.8 < puck_pos[0] <= -0.2 and np.abs(puck_pos[1]) < 0.39105 and puck_vel[0] < 0.1:

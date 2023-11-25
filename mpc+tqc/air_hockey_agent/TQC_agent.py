@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from air_hockey_challenge.framework.agent_base import AgentBase
 from omegaconf import OmegaConf
 from torch.distributions import Distribution, Normal
-from utils import solve_hit_config_ik_null
+from air_hockey_challenge.utils.kinematics import inverse_kinematics
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -150,8 +150,8 @@ class TQC_agent(AgentBase):
         y = self.get_ee_pose(state)[0][:2]
         des_v = action[2]*(x_-y)/(np.linalg.norm(x_-y)+1e-8)
         des_v = np.concatenate((des_v,[0])) 
-        # _,x = inverse_kinematics(self.policy.robot_model, self.policy.robot_data,des_pos)
-        _,x = solve_hit_config_ik_null(self.robot_model,self.robot_data, des_pos, des_v, self.get_joint_pos(state))
+        _,x = inverse_kinematics(self.policy.robot_model, self.policy.robot_data,des_pos)
+        # _,x = solve_hit_config_ik_null(self.robot_model,self.robot_data, des_pos, des_v, self.get_joint_pos(state))
         return x
 
     def select_action(self, state):
