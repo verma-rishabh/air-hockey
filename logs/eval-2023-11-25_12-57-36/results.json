@@ -1,0 +1,12 @@
+{
+    "7dof-defend": {
+        "Success": 0.0,
+        "Penalty": 40.5,
+        "Color": 0
+    },
+    "Total Score": {
+        "Score": 0.0,
+        "Max Penalty": 40.5,
+        "Color": 0
+    }
+}

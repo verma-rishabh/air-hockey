@@ -1,0 +1,430 @@
+{
+    "Episode 0": [
+        "joint_vel_constr violated",
+        "ee_constr violated",
+        "max computation_time > 0.2s"
+    ],
+    "Episode 1": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 2": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 3": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 4": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 5": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 6": [
+        "joint_vel_constr violated",
+        "ee_constr violated",
+        "link_constr violated"
+    ],
+    "Episode 7": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 8": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 9": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 10": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 11": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 12": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 13": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 14": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 15": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 16": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 17": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 18": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 19": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 20": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 21": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 22": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 23": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 24": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 25": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated",
+        "max computation_time > 0.02s"
+    ],
+    "Episode 26": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 27": [
+        "joint_vel_constr violated",
+        "ee_constr violated",
+        "max computation_time > 0.02s"
+    ],
+    "Episode 28": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 29": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 30": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 31": [
+        "joint_vel_constr violated"
+    ],
+    "Episode 32": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 33": [
+        "joint_vel_constr violated",
+        "ee_constr violated",
+        "max computation_time > 0.02s"
+    ],
+    "Episode 34": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 35": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 36": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 37": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 38": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 39": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 40": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 41": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 42": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 43": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 44": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 45": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 46": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 47": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 48": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 49": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 50": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 51": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 52": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 53": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 54": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 55": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 56": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 57": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 58": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 59": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 60": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 61": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 62": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 63": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 64": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 65": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 66": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 67": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 68": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 69": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 70": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 71": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 72": [
+        "joint_vel_constr violated",
+        "ee_constr violated",
+        "link_constr violated"
+    ],
+    "Episode 73": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 74": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 75": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 76": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 77": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 78": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 79": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 80": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 81": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 82": [
+        "joint_pos_constr violated",
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 83": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 84": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 85": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 86": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 87": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 88": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 89": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 90": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 91": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 92": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 93": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 94": [
+        "joint_vel_constr violated",
+        "ee_constr violated",
+        "link_constr violated"
+    ],
+    "Episode 95": [
+        "joint_vel_constr violated",
+        "ee_constr violated",
+        "link_constr violated"
+    ],
+    "Episode 96": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 97": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "Episode 98": [
+        "joint_vel_constr violated"
+    ],
+    "Episode 99": [
+        "joint_vel_constr violated",
+        "ee_constr violated"
+    ],
+    "violation summary": {
+        "joint_vel_constr": 100,
+        "ee_constr": 98,
+        "Computation Time": 4,
+        "joint_pos_constr": 14,
+        "link_constr": 4,
+        "Total": 220
+    }
+}
