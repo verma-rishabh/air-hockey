@@ -1,0 +1,18 @@
+env: 7dof-defend
+agent:
+    policy: tqc-defend               
+    seed: 0              
+    start_timesteps: 0
+    eval_freq: 3e3
+    max_timesteps: 2e6     
+    batch_size: 256
+    discount: 0.99             
+    tau: 0.005
+    top_quantiles_to_drop_per_net: 2
+    n_quantiles: 25
+    n_nets: 5       
+    max_episode_steps: 500
+    save_model: True     
+    load_model: ""
+    dump_dir : ./defend
+    file_name : ${agent.policy}_${env}_${agent.seed}_mpc
