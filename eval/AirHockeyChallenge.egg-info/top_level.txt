@@ -1,3 +1,0 @@
-air_hockey_challenge
-baseline
-examples
