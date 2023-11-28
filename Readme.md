@@ -15,6 +15,22 @@ Please see the [documentation](https://air-hockey-challenges-docs.readthedocs.io
 
 ``python run.py -r -e 7dof-defend --n_cores 1 --n_episodes 100 --example tqc_ik``
 
+<!-- ![TQC-IK][tqc_ik.gif]
+
+![TQC-MPC][tqc_mpc.gif] -->
+
+### TQC + MPC
+<p align="left">
+  <img src="tqc_mpc.gif" height="256">
+
+</p>
+
+
+### TQC + IK
+<p align="left">
+  <img src="tqc_ik.gif" height="256">
+
+</p>
 
 ## License
 
